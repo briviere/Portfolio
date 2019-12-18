@@ -31,6 +31,9 @@ class NetworkManagerTests: XCTestCase {
    
    
    // MARK: - Network Manager Class Unit Tests
+    func testgetPosition() {
+        
+    }
    
    /**
     Network Manager fetchPosition(for,completion) function unit tests.

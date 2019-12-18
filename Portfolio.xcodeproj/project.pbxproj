@@ -36,6 +36,9 @@
 		45CCB2311CAEC74200F909A5 /* PositionCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45CCB2301CAEC74200F909A5 /* PositionCoordinatorTests.swift */; };
 		45E43D8A1CCFCE69002EE253 /* ErrorMessagesUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E43D891CCFCE69002EE253 /* ErrorMessagesUITests.swift */; };
 		45E43D8C1CCFD19E002EE253 /* UIGlobalProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45E43D8B1CCFD19E002EE253 /* UIGlobalProperties.swift */; };
+		9522E481239D588400844AA1 /* PositionsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9522E480239D588400844AA1 /* PositionsModel.swift */; };
+		9522E485239DD3D100844AA1 /* RestManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9522E484239DD3D100844AA1 /* RestManager.swift */; };
+		95D6303323A5BE8A00DBD278 /* PortfoliosModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 95D6303123A5BE8A00DBD278 /* PortfoliosModel.xcdatamodeld */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -91,6 +94,9 @@
 		45CCB2301CAEC74200F909A5 /* PositionCoordinatorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PositionCoordinatorTests.swift; sourceTree = "<group>"; };
 		45E43D891CCFCE69002EE253 /* ErrorMessagesUITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ErrorMessagesUITests.swift; sourceTree = "<group>"; };
 		45E43D8B1CCFD19E002EE253 /* UIGlobalProperties.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIGlobalProperties.swift; sourceTree = "<group>"; };
+		9522E480239D588400844AA1 /* PositionsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionsModel.swift; sourceTree = "<group>"; };
+		9522E484239DD3D100844AA1 /* RestManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestManager.swift; sourceTree = "<group>"; };
+		95D6303223A5BE8A00DBD278 /* PortfoliosModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = PortfoliosModel.xcdatamodel; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -159,6 +165,9 @@
 				45937D3D1C57A97C00B04951 /* Assets.xcassets */,
 				45937D3F1C57A97C00B04951 /* LaunchScreen.storyboard */,
 				45937D421C57A97C00B04951 /* Info.plist */,
+				9522E480239D588400844AA1 /* PositionsModel.swift */,
+				9522E484239DD3D100844AA1 /* RestManager.swift */,
+				95D6303123A5BE8A00DBD278 /* PortfoliosModel.xcdatamodeld */,
 			);
 			path = Portfolio;
 			sourceTree = "<group>";
@@ -338,11 +347,14 @@
 				459355471C57C65800EC0344 /* NetworkManager.swift in Sources */,
 				455CBA831C984BE5008AE2AE /* PositionViewController.swift in Sources */,
 				4504AC8C1C89137E00EEB793 /* AppCoordinator.swift in Sources */,
+				9522E485239DD3D100844AA1 /* RestManager.swift in Sources */,
 				45937D371C57A97B00B04951 /* AppDelegate.swift in Sources */,
+				95D6303323A5BE8A00DBD278 /* PortfoliosModel.xcdatamodeld in Sources */,
 				45A93FDA1C88F02B006AD881 /* ThemeManager.swift in Sources */,
 				456E5E0B1C59546C001DAEEF /* PositionModel.swift in Sources */,
 				4593554E1C57DB4500EC0344 /* PositionCollectionViewCell.swift in Sources */,
 				45937D661C57AD3A00B04951 /* PortfolioViewController.swift in Sources */,
+				9522E481239D588400844AA1 /* PositionsModel.swift in Sources */,
 				45A93FDC1C88F4FE006AD881 /* JSONCoordinator.swift in Sources */,
 				45B814071C6161FD00F1BB2F /* PositionCoordinator.swift in Sources */,
 			);
@@ -634,6 +646,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		95D6303123A5BE8A00DBD278 /* PortfoliosModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				95D6303223A5BE8A00DBD278 /* PortfoliosModel.xcdatamodel */,
+			);
+			currentVersion = 95D6303223A5BE8A00DBD278 /* PortfoliosModel.xcdatamodel */;
+			path = PortfoliosModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 45937D2B1C57A97B00B04951 /* Project object */;
 }

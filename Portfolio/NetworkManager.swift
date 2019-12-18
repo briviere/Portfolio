@@ -42,22 +42,43 @@ enum NetworkError: Int, Error {
 }
 
 
+
+
 class NetworkManager {
    
-   // MARK: - Properties
+    // MARK: - Set RestManger Code
+    let rest = RestManager.shared
+    
+    // MARK: - Properties
+    
+    var requestHttpHeaders = RestEntity()
+    
+    var urlQueryParameters = RestEntity()
+    
+    var httpBodyParameters = RestEntity()
+    
+    var httpBody: Data?
    
-   static let shared = NetworkManager()  // singleton
+    static let shared = NetworkManager()  // singleton
    
-   var isNetworkAvailable: Bool { return NetworkReachability.isConnectedToNetwork() }
+    var isNetworkAvailable: Bool { return NetworkReachability.isConnectedToNetwork() }
    
-   private let baseURL = URL(string: "http://dev.markitondemand.com/MODApis/Api/quote/json")
-   private let queryParameter = "symbol"
-   private let maximumOperationsPerSecond = 5  // service is limited to about 10 operations per second, but sometimes drastically lower
-   fileprivate let errorDomain = "com.extremebytes.portfolio"
+   //private let baseURL = URL(string: "http://dev.markitondemand.com/MODApis/Api/quote/json")
+    private let baseURL = URL(string:"https://api.worldtradingdata.com/api/v1/stock")
+    
+   //private let queryParameter = "symbol"
    
-   private var operationsQueue: [URLSessionTask] = []
-   private var operationTimer: Timer?
-   private var operationsInProgress = 0 {
+    private let queryParameter = "symbol"
+    
+
+    let baseParams = ["api_token" : "iiJAjjHVtrYbeGF1rKV3hmstTRRYi4MW12YEmaQtwE26GYw5HMMXmLm7JEbY"]
+    
+    private let maximumOperationsPerSecond = 5  // service is limited to about 10 operations per second, but sometimes drastically lower
+    fileprivate let errorDomain = "com.extremebytes.portfolio"
+   
+    private var operationsQueue: [URLSessionTask] = []
+    private var operationTimer: Timer?
+    private var operationsInProgress = 0 {
       didSet {
          if operationsInProgress > 0 {
             showNetworkIndicator()
@@ -95,9 +116,13 @@ class NetworkManager {
       #endif
       batchJobs()
    }
-   
-   
+    
+ 
    // MARK: - Network Operations
+    
+    
+    
+    
    
    /**
     Fetches details for an investment position from the server.
@@ -105,74 +130,144 @@ class NetworkManager {
     - parameter symbol:     The ticker symbol representing the investment.
     - parameter completion: A closure that is executed upon completion.
     */
-   func fetchPosition(for symbol: String, completion: @escaping (_ position: Position?, _ error: Error?) -> Void) {
-      var position: Position?
-      var error: Error?
-      
-      // Verify network request
-      guard !symbol.isEmpty,
-         let baseURL = baseURL,
-         var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: true) else {
-         DispatchQueue.main.async {
-            completion(nil, NetworkError.invalidRequest.error)
-         }
-         return
-      }
-      components.queryItems = [URLQueryItem(name: queryParameter, value: symbol)]
-      guard let requestURL = components.url else {
-         DispatchQueue.main.async {
-            completion(nil, NetworkError.invalidRequest.error)
-         }
-         return
-      }
-      
-      // Create network request
-      let task = URLSession.shared.dataTask(with: requestURL) { serverData, serverResponse, serverError in
-         self.operationsInProgress -= 1
-         #if DEBUG
-            print("Finished fetch: \(self.operationsInProgress) in progress")
-         #endif
-         
-         // Check and apply server results
-         do {
-            if let serverError = serverError {  // check server error
-               if !self.isNetworkAvailable {
-                  error = NetworkError.noConnection.error
-               } else {
-                  error = serverError
-               }
-            } else if let serverResponse = serverResponse as? HTTPURLResponse,
-               !(200...299 ~= serverResponse.statusCode) {  // check server response
-               print("Invalid server response code: \(serverResponse.statusCode)")
-               error = NetworkError.invalidResponse.error
-            } else if let serverData = serverData,  // check server data
-               let jsonObject = try JSONSerialization.jsonObject(with: serverData, options: []) as? JSONDictionary {
-//               #if DEBUG
-//                  let serverString = NSString(data: serverData, encoding: String.Encoding.utf8.rawValue)
-//                  print("String data from server:\n\(serverString)")
-//               #endif
-               position = Position.forJSON(jsonObject)
+   func fetchPosition(for symbol: String, completion: @escaping (_ results: Results?, _ error: Error?) -> Void) {
+        var error: Error?
+     
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let url = URL(string: "https://api.worldtradingdata.com/api/v1/stock?symbol=\(symbol)&api_token=iiJAjjHVtrYbeGF1rKV3hmstTRRYi4MW12YEmaQtwE26GYw5HMMXmLm7JEbY") else { return
+                 
             }
-         } catch let jsonError {
-            error = jsonError
-         }
-         
-         // Execute completion handler
-         DispatchQueue.main.async {
-            completion(position, error)
-         }
-      }
-      
-      // Queue network request
-      operationsInProgress += 1
-      #if DEBUG
-         print("Started fetch: \(operationsInProgress) in progress")
-      #endif
-      operationsQueue.append(task)
+            
+            let httpBody = self?.getHttpBody()
+            
+            guard let request = self?.prepareRequest(withURL: url, httpBody: httpBody, httpMethod: .get) else
+            {
+                completion(Results(withError: CustomError.failedToCreateRequest), error)
+                return
+            }
+            
+            let sessionConfiguration = URLSessionConfiguration.default
+            let session = URLSession(configuration: sessionConfiguration)
+            let task = session.dataTask(with: request) { (data, response, error) in
+                completion(Results(withData: data,
+                                   response: Response(fromURLResponse: response),
+                                   error: error), error)
+            }
+            task.resume()
+        }
+    
+    
+        // The following will make RestManager create the following URL:
+        // https://reqres.in/api/users?page=2
+//        RestManager.shared.urlQueryParameters.add(value: symbol, forKey: "symbol")
+//        RestManager.shared.urlQueryParameters.add(value: "iiJAjjHVtrYbeGF1rKV3hmstTRRYi4MW12YEmaQtwE26GYw5HMMXmLm7JEbY", forKey: "api_token")
+        
+//        RestManager.shared.makeRequest(toURL: url, withHttpMethod: .get) { (results) in
+//            if let data = results.data {
+//                let decoder = JSONDecoder()
+//                //decoder.keyDecodingStrategy = .convertFromSnakeCase
+//                guard let positionsData = try? decoder.decode(PositionsData.self, from: data) else { return }
+//
+//                print(positionsData)
+//
+//                position = Position()
+//
+//                position?.status = "open"
+//
+//                if let symbol = positionsData.data?[0].symbol {
+//                    position?.symbol = symbol
+//                }
+//
+//                if let name = positionsData.data?[0].name {
+//                    position?.name = name
+//                }
+//
+//                if let lastPrice = positionsData.data?[0].price {
+//                    position?.lastPrice = Double(lastPrice)
+//                }
+//
+//                if let change = positionsData.data?[0].day_change {
+//                    position?.change = Double(change)
+//                }
+//
+//                if let changePercent = positionsData.data?[0].change_pct {
+//                    position?.changePercent = Double(changePercent)
+//                }
+//
+//                position?.timeStamp = positionsData.data?[0].last_trade_time
+//
+//                if let marketCap = positionsData.data?[0].market_cap {
+//                    position?.marketCap = Double(marketCap)
+//                }
+//
+//                if let volume = positionsData.data?[0].volume {
+//                    position?.volume = Double(volume)
+//                }
+//
+//                if let changeYTD = positionsData.data?[0].day_change {
+//                    position?.changeYTD = Double(changeYTD)
+//                }
+//
+//                if let changePercentYTD = positionsData.data?[0].change_pct {
+//                    position?.changePercentYTD = Double(changePercentYTD)
+//                }
+//
+//                if let high = positionsData.data?[0].day_high {
+//                    position?.high = Double(high)
+//                }
+//
+//                if let low = positionsData.data?[0].day_low {
+//                    position?.low = Double(low)
+//                }
+//
+//                if let open = positionsData.data?[0].price_open {
+//                    position?.open = Double(open)
+//                }
+//            }
+//
+//            print("\n\nResponse HTTP Headers:\n")
+//
+//            if let response = results.response {
+//                for (key, value) in response.headers.allValues() {
+//                    print(key, value)
+//                }
+//            }
+//
+//            // Execute completion handler
+//            DispatchQueue.main.async {
+//                    completion(position, error)
+//            }
+//        }
    }
    
    
-   // MARK: - Other
+    // MARK: - Other
+    
+    private func prepareRequest(withURL url: URL?, httpBody: Data?, httpMethod: HttpMethod) -> URLRequest? {
+        guard let url = url else { return nil }
+        var request = URLRequest(url: url)
+        request.httpMethod = httpMethod.rawValue
+        
+        for (header, value) in requestHttpHeaders.allValues() {
+            request.setValue(value, forHTTPHeaderField: header)
+        }
+        
+        request.httpBody = httpBody
+        return request
+    }
+    
+    private func getHttpBody() -> Data? {
+        guard let contentType = requestHttpHeaders.value(forKey: "Content-Type") else { return nil }
+        
+        if contentType.contains("application/json") {
+            return try? JSONSerialization.data(withJSONObject: httpBodyParameters.allValues(), options: [.prettyPrinted, .sortedKeys])
+        } else if contentType.contains("application/x-www-form-urlencoded") {
+            let bodyString = httpBodyParameters.allValues().map { "\($0)=\(String(describing: $1.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)))" }.joined(separator: "&")
+            return bodyString.data(using: .utf8)
+        } else {
+            return httpBody
+        }
+    }
    
    /**
     Hides the status bar network indicator.
@@ -214,4 +309,86 @@ class NetworkManager {
       }
       operationsQueue.removeFirst(numberOfBatchTasks)
    }
+}
+
+extension NetworkManager {
+    struct RestEntity {
+        private var values: [String: String] = [:]
+        
+        mutating func add(value: String, forKey key: String) {
+            values[key] = value
+        }
+        
+        func value(forKey key: String) -> String? {
+            return values[key]
+        }
+        
+        func allValues() -> [String: String] {
+            return values
+        }
+        
+        func totalItems() -> Int {
+            return values.count
+        }
+    }
+    
+    enum HttpMethod: String {
+        case get
+        case post
+        case put
+        case patch
+        case delete
+    }
+    
+    struct Response {
+            var response: URLResponse?
+            var httpStatusCode: Int = 0
+            var headers = RestEntity()
+            
+            init(fromURLResponse response: URLResponse?) {
+                guard let response = response else { return }
+                self.response = response
+                httpStatusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
+                
+                if let headerFields = (response as? HTTPURLResponse)?.allHeaderFields {
+                    for (key, value) in headerFields {
+                        headers.add(value: "\(value)", forKey: "\(key)")
+                    }
+                }
+            }
+        }
+        
+        
+        
+        struct Results {
+            var data: Data?
+            var response: Response?
+            var error: Error?
+            
+            init(withData data: Data?, response: Response?, error: Error?) {
+                self.data = data
+                self.response = response
+                self.error = error
+            }
+            
+            init(withError error: Error) {
+                self.error = error
+            }
+        }
+
+            
+            
+        enum CustomError: Error {
+            case failedToCreateRequest
+        }
+    }
+
+
+    // MARK: - Custom Error Description
+    extension NetworkManager.CustomError: LocalizedError {
+        public var localizedDescription: String {
+            switch self {
+            case .failedToCreateRequest: return NSLocalizedString("Unable to create the URLRequest object", comment: "")
+            }
+    }
 }

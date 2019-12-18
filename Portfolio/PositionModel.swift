@@ -9,6 +9,10 @@
 
 import Foundation
 
+enum PositionsResult {
+    case success([Data])
+    case failure(Error)
+}
 
 // MARK: - Base Position Model
 
@@ -31,12 +35,11 @@ struct Position {
    var high: Double?
    var low: Double?
    var open: Double?
-   
+
    // User data
    var shares: Double?
    var memberType: PositionMemberType?
 }
-
 
 // MARK: - Position State Extension
 
@@ -50,6 +53,7 @@ extension Position {
          && volume == nil && changeYTD == nil && changePercentYTD == nil && high == nil
          && low == nil && open == nil && shares == nil && memberType == nil
    }
+    
    var isComplete: Bool {
       if let status = status, !status.isEmpty,
          let symbol = symbol, !symbol.isEmpty,
@@ -247,60 +251,6 @@ func ==(lhs: Position, rhs: Position) -> Bool {
       && lhs.shares == rhs.shares
       && lhs.memberType == rhs.memberType
 }
-
-
-// MARK: - Position JSONParseable Extension
-
-/**
- Adds JSON parsing functionality to base investment position model.
- */
-extension Position: JSONParseable {
-   /// Creates and returns a position created with the supplied JSON data.
-   ///
-   /// - Parameter json: The JSON data.
-   /// - Returns: The position created from the JSON data.
-   static func forJSON(_ json: JSONDictionary) -> Position? {
-      // Typically would do something like the following to ensure a valid object,
-      // however in this case, we are generally okay with missing values.
-      //      guard let jsonDictionary = json["Data"] as? JSONDictionary,
-      //         status = jsonDictionary["Status"] as? String,
-      //         symbol = jsonDictionary["Symbol"] as? String,
-      //         name = jsonDictionary["Name"] as? String,
-      //         lastPrice = jsonDictionary["LastPrice"] as? Double
-      //          where status.lowercaseString.rangeOfString("success") != nil
-      //         else {
-      //            return nil
-      //      }
-      //      return Position(status: status, symbol: symbol, name: name, lastPrice: lastPrice)
-      
-      guard let jsonDictionary = json["Data"] as? JSONDictionary else {
-         return nil
-      }
-
-      // TODO: The "as?" cast can probably be removed using Generic Subscripts available in Swift 4
-      //       or by making Position conform to the new Codable protocol
-      var position = Position()
-      position.status = jsonDictionary["Status"] as? String
-      position.symbol = jsonDictionary["Symbol"] as? String
-      position.name = jsonDictionary["Name"] as? String
-      position.lastPrice = jsonDictionary["LastPrice"] as? Double
-      position.change = jsonDictionary["Change"] as? Double
-      position.changePercent = jsonDictionary["ChangePercent"] as? Double
-      position.timeStamp = jsonDictionary["Timestamp"] as? String
-      position.marketCap = jsonDictionary["MarketCap"] as? Double
-      position.volume = jsonDictionary["Volume"] as? Double
-      position.changeYTD = jsonDictionary["ChangeYTD"] as? Double
-      position.changePercentYTD = jsonDictionary["ChangePercentYTD"] as? Double
-      position.high = jsonDictionary["High"] as? Double
-      position.low = jsonDictionary["Low"] as? Double
-      position.open = jsonDictionary["Open"] as? Double
-      
-      guard !position.isEmpty else { return nil }
-      
-      return position
-   }
-}
-
 
 // MARK: - Position CustomStringConvertible Extension
 
