@@ -71,7 +71,7 @@ class NetworkManager {
     private let queryParameter = "symbol"
     
 
-    let baseParams = ["api_token" : "iiJAjjHVtrYbeGF1rKV3hmstTRRYi4MW12YEmaQtwE26GYw5HMMXmLm7JEbY"]
+    let baseParams = ["api_token" : "INSERT TOKEN HERE"]
     
     private let maximumOperationsPerSecond = 5  // service is limited to about 10 operations per second, but sometimes drastically lower
     fileprivate let errorDomain = "com.extremebytes.portfolio"
@@ -134,7 +134,7 @@ class NetworkManager {
         var error: Error?
      
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let url = URL(string: "https://api.worldtradingdata.com/api/v1/stock?symbol=\(symbol)&api_token=iiJAjjHVtrYbeGF1rKV3hmstTRRYi4MW12YEmaQtwE26GYw5HMMXmLm7JEbY") else { return
+            guard let url = URL(string: "https://api.worldtradingdata.com/api/v1/stock?symbol=\(symbol)&api_token=INSERT TOKEN HERE") else { return
                  
             }
             
@@ -160,7 +160,7 @@ class NetworkManager {
         // The following will make RestManager create the following URL:
         // https://reqres.in/api/users?page=2
 //        RestManager.shared.urlQueryParameters.add(value: symbol, forKey: "symbol")
-//        RestManager.shared.urlQueryParameters.add(value: "iiJAjjHVtrYbeGF1rKV3hmstTRRYi4MW12YEmaQtwE26GYw5HMMXmLm7JEbY", forKey: "api_token")
+//        RestManager.shared.urlQueryParameters.add(value: "INSERT TOKEN HERE", forKey: "api_token")
         
 //        RestManager.shared.makeRequest(toURL: url, withHttpMethod: .get) { (results) in
 //            if let data = results.data {
